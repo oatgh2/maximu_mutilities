@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "package": "app.oatgh.maximum_utilities.mixins",
+  "target": "@env(DEFAULT)",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "maximum_utilities.refmap.json",
+  "mixins": [
+    "BowlMixin"
+  ]
+}
