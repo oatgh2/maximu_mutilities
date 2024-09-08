@@ -60,6 +60,14 @@ public abstract class BowlMixin {
                     if(!pLevel.isClientSide()){
                         CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)pPlayer, resultedItemStack);
                     }
+                    ItemStack itemStackInHand = pPlayer.getItemInHand(pUsedHand);
+                    if(itemStackInHand.getCount() > 1){
+                        pPlayer.setItemInHand(pUsedHand, new ItemStack(itemStackInHand.getItem(),
+                                itemStackInHand.getCount() - 1));
+                        pPlayer.addItem(resultedItemStack);
+                    }else{
+                        pPlayer.setItemInHand(pUsedHand, resultedItemStack);
+                    }
                 }
             } catch (Exception ex) {
                 LOGGER.error(ex.toString());

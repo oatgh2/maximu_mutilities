@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "maximumutilities:bread_dough"
+  },
+  "result": "minecraft:bread",
+  "experience": 0,
+  "cookingtime": 200
+}
