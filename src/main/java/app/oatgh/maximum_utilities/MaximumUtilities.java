@@ -3,6 +3,7 @@ package app.oatgh.maximum_utilities;
 import app.oatgh.maximum_utilities.registries.MUBlocks;
 import app.oatgh.maximum_utilities.registries.MUEntities;
 import app.oatgh.maximum_utilities.registries.MUItems;
+import app.oatgh.maximum_utilities.registries.MUMenus;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
@@ -30,6 +31,7 @@ public class MaximumUtilities
         MUBlocks.BLOCKS.register(modEventBus);
         MUItems.ITEMS.register(modEventBus);
         MUEntities.BLOCK_ENTITIES.register(modEventBus);
+        MUMenus.MENU_TYPES.register(modEventBus);
 
         modEventBus.addListener(MUItems::addCreative);
 

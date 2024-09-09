@@ -1,10 +1,9 @@
 package app.oatgh.maximum_utilities.blocks.furnances;
 
 import app.oatgh.maximum_utilities.blocks.entities.MaximumUtilitiesBlockEntity;
-import app.oatgh.maximum_utilities.items.BreadDough;
+import app.oatgh.maximum_utilities.handlers.AdaptedItemHandler;
 import app.oatgh.maximum_utilities.registries.MUEntities;
 import app.oatgh.maximum_utilities.registries.MUItems;
-import app.oatgh.maximum_utilities.registries.MURecipes;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,7 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
@@ -20,6 +19,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -31,9 +31,39 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
 
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    private final ItemStackHandler items = createItemHandler();
+    private final ItemStackHandler inputItems = createItemHandler(2);
+    private final ItemStackHandler outputItems = createItemHandler(1);
 
-    private final LazyOptional<IItemHandler> itemHandler = LazyOptional.of(() -> items);
+    private final LazyOptional<IItemHandler> itemsHandler = LazyOptional.of(() -> new CombinedInvWrapper(inputItems, outputItems));
+    private final LazyOptional<IItemHandler> inputItemsHandler = LazyOptional.of(() -> new AdaptedItemHandler(inputItems){
+        @Override
+        public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
+            return ItemStack.EMPTY;
+        }
+    });
+
+    private final LazyOptional<IItemHandler> outputHandler = LazyOptional.of(() -> new AdaptedItemHandler(outputItems){
+        @Override
+        public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack itemStack, boolean simulate) {
+            return itemStack;
+        }
+    });
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        itemsHandler.invalidate();
+        inputItemsHandler.invalidate();
+        outputHandler.invalidate();
+    }
+
+    public ItemStackHandler getInputs(){
+        return inputItems;
+    }
+
+    public ItemStackHandler getOutput(){
+        return outputItems;
+    }
 
     private int progress = 0;
 
@@ -41,26 +71,19 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
         return progress;
     }
 
-    public int BurnTime = 0;
+    public int BurnItemTime = 0;
 
     public BackeryFurnanceEntity(BlockPos pPos, BlockState pBlockState) {
         super(MUEntities.BACKERY_FURNANCE_ENTITY.get(), pPos, pBlockState);
     }
 
     @NonNull
-    private ItemStackHandler createItemHandler() {
-        return new ItemStackHandler(3) {
+    private ItemStackHandler createItemHandler(int slots) {
+        return new ItemStackHandler(slots) {
             @Override
             protected void onContentsChanged(int slot) {
                 super.onContentsChanged(slot);
                 level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
-                ItemStack itemStack = items.getStackInSlot(0);
-                if (items.getStackInSlot(0).getItem() instanceof BreadDough breadDough) {
-                    int burnItemTime = breadDough.getBurnTime(items.getStackInSlot(0),
-                            RecipeType.simple(MURecipes.BREAD_DOUGH_RECIPE));
-                    int backeryBurnRealTime = burnItemTime / 10;
-                    BurnTime = backeryBurnRealTime;
-                }
             }
         };
     }
@@ -68,7 +91,7 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            return itemHandler.cast();
+            return itemsHandler.cast();
         } else {
             return super.getCapability(cap);
         }
@@ -77,13 +100,13 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
 
     @Override
     protected void saveClientData(@NotNull CompoundTag tag) {
-        tag.put(ITEMS_TAG, items.serializeNBT());
+        tag.put(ITEMS_TAG, inputItems.serializeNBT());
     }
 
     @Override
     protected void loadClientData(@NotNull CompoundTag pTag) {
         if (pTag.contains(ITEMS_TAG)) {
-            items.deserializeNBT(pTag.getCompound(ITEMS_TAG));
+            inputItems.deserializeNBT(pTag.getCompound(ITEMS_TAG));
         }
     }
 
@@ -106,20 +129,20 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
 
 
     public void SetStackInSlot(int slot, ItemStack stack) {
-        items.setStackInSlot(slot, stack);
+        inputItems.setStackInSlot(slot, stack);
     }
 
     public void AddStackInSlot(int slot, int amount) {
-        ItemStack itemStack = items.getStackInSlot(slot);
+        ItemStack itemStack = inputItems.getStackInSlot(slot);
         if (itemStack != ItemStack.EMPTY) {
             itemStack.setCount(itemStack.getCount() + amount);
-            items.setStackInSlot(slot, itemStack);
+            inputItems.setStackInSlot(slot, itemStack);
         }
     }
 
     public void TakeStackFromPlayer(Player player, InteractionHand hand, int slot) {
         ItemStack playerItemStack = player.getItemInHand(hand);
-        ItemStack stackInSlot = items.getStackInSlot(slot);
+        ItemStack stackInSlot = inputItems.getStackInSlot(slot);
         if (stackInSlot.getCount() < 64 && (stackInSlot.is(playerItemStack.getItem())
                 || stackInSlot == ItemStack.EMPTY)){
             int maxItemSlotCountRemaining = 64 - stackInSlot.getCount();
@@ -128,7 +151,7 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
                 if(stackInSlot.is(MUItems.BREAD_DOUGH.get())){
                     stackInSlot.setCount(stackInSlot.getCount() + playerItemStack.getCount());
                 }else {
-                    items.setStackInSlot(0, new ItemStack(playerItemStack.getItem()
+                    inputItems.setStackInSlot(0, new ItemStack(playerItemStack.getItem()
                             , stackInSlot.getCount() + playerItemStack.getCount()));
                 }
                 playerItemStack.setCount(0);
@@ -138,7 +161,7 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
                     playerItemStack.setCount(countToPlayer);
                     stackInSlot.setCount(stackInSlot.getCount() + maxItemSlotCountRemaining);
                 }else{
-                    items.setStackInSlot(0, new ItemStack(playerItemStack.getItem(),
+                    inputItems.setStackInSlot(0, new ItemStack(playerItemStack.getItem(),
                             stackInSlot.getCount() + maxItemSlotCountRemaining));
                 }
             }
@@ -147,16 +170,16 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
 
 
     public void AddStackInSlot(int slot, ItemStack stack) {
-        ItemStack itemStack = items.getStackInSlot(slot);
-        items.setStackInSlot(slot, stack);
+        ItemStack itemStack = inputItems.getStackInSlot(slot);
+        inputItems.setStackInSlot(slot, stack);
     }
 
     public ItemStack GetStackInSlot(int slot) {
-        return items.getStackInSlot(slot);
+        return inputItems.getStackInSlot(slot);
     }
 
     public ItemStack ExtractStackInSlot(int slot, int amount) {
-        return items.extractItem(slot, amount, false);
+        return inputItems.extractItem(slot, amount, false);
     }
 
     @Override
@@ -164,6 +187,19 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
         tickTest();
         CompoundTag nbtData = saveWithoutMetadata();
 
-        progress++;
+        if(inputItems.getStackInSlot(0).getCount() > 0 && progress < BurnItemTime
+                && inputItems.getStackInSlot(2).getCount() < 64)
+            progress++;
+
+        if(progress == BurnItemTime){
+            progress = 0;
+            inputItems.extractItem(0, 1, false);
+
+            if(inputItems.getStackInSlot(2).getItem() == Items.BREAD){
+                inputItems.getStackInSlot(2).setCount(inputItems.getStackInSlot(2).getCount() + 1);
+            }else{
+                inputItems.setStackInSlot(2, new ItemStack(Items.BREAD.asItem(), 1));
+            }
+        }
     }
 }
