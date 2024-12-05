@@ -44,6 +44,15 @@ minecraft {
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
             arg "-mixin.config=maximumutilities.mixin.json"
+            jvmArg "-XX:+AllowEnhacedClassRedefinition"
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', 'examplemod'
+            mods{
+                maximum_utilities{
+                    source sourceSets.main
+                }
+            }
         }
 
         server {
@@ -89,6 +98,7 @@ repositories {
 }
 
 dependencies {
+    implementation files("D:\\Downloads\\hotswap-agent-1.4.2-SNAPSHOT.jar")
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
 

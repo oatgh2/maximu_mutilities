@@ -1,29 +1,19 @@
 package app.oatgh.maximum_utilities.blocks.furnances;
 
 import app.oatgh.maximum_utilities.blocks.MaximumUtilitiesBlockBase;
-import app.oatgh.maximum_utilities.blocks.menu.containers.BackeryFurnanceContainer;
-import app.oatgh.maximum_utilities.blocks.menu.screens.BackeryFurnanceScreen;
-import app.oatgh.maximum_utilities.registries.MUItems;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.network.NetworkHooks;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 public class BakceryFurnance extends MaximumUtilitiesBlockBase {
@@ -37,27 +27,39 @@ public class BakceryFurnance extends MaximumUtilitiesBlockBase {
     }
 
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer,
-                                 InteractionHand pHand, BlockHitResult pHit) {
-        if(!pLevel.isClientSide()){
-            BlockEntity be = pLevel.getBlockEntity(pPos);
-            if(be instanceof BackeryFurnanceEntity){
-                MenuProvider menuProvider = new MenuProvider() {
-                    @Override
-                    public Component getDisplayName() {
-                        return Component.translatable("maximumutilities.screen.backery.furnance");
-                    }
+    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
+        BlockEntity blockEntity = pLevel.getBlockEntity(pPos);
+        LazyOptional<IItemHandler> cap = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER);
+        cap.ifPresent(iItemHandler -> {
+            IItemHandler handler =  iItemHandler;
 
-                    @Override
-                    public @Nullable AbstractContainerMenu createMenu(int windowId, Inventory playerInventory,
-                                                                      Player player) {
-                        return new BackeryFurnanceContainer(windowId, playerInventory, pPos);
+            int slots = handler.getSlots();
+            if(!pPlayer.isShiftKeyDown()){
+                ItemStack itemStack = pPlayer.getItemInHand(pHand);
+                Integer slotEqualsItemStackInHand = null;
+                for(int i = 0; i < slots; i++){
+                    if(handler.getStackInSlot(i).isEmpty() ||
+                            (handler.getStackInSlot(i).getItem() == itemStack.getItem()
+                                    && handler.getStackInSlot(i).getCount() < handler.getStackInSlot(i).getMaxStackSize())){
+                        slotEqualsItemStackInHand = i;
+                        break;
                     }
-                };
-                NetworkHooks.openScreen((ServerPlayer) pPlayer, menuProvider, be.getBlockPos());
+                }
+
+                if(slotEqualsItemStackInHand != null){
+                    ItemStack stack = handler.insertItem(slotEqualsItemStackInHand, itemStack, false);
+                    pPlayer.setItemInHand(pHand, stack);
+                }
+            }else{
+                for(int i = 0; i < slots; i++){
+                    if(!handler.getStackInSlot(i).isEmpty()){
+                        pPlayer.addItem(handler.extractItem(i, handler.getStackInSlot(i).getCount(), false));
+                        break;
+                    }
+                }
             }
-        }
+        });
+
         return InteractionResult.SUCCESS;
     }
-
 }

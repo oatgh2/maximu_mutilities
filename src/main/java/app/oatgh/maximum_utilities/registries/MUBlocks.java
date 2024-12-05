@@ -1,11 +1,12 @@
 package app.oatgh.maximum_utilities.registries;
 
-import app.oatgh.maximum_utilities.MaximumUtilities;
 import app.oatgh.maximum_utilities.blocks.furnances.BakceryFurnance;
+import app.oatgh.maximum_utilities.MaximumUtilities;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+
 
 public class MUBlocks {
 

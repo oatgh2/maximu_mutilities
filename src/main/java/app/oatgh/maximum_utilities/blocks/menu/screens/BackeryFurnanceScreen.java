@@ -19,11 +19,10 @@ public class BackeryFurnanceScreen extends AbstractContainerScreen<BackeryFurnan
         this.inventoryLabelY = this.imageHeight - 110;
     }
 
-
     @Override
     protected void renderBg(@NotNull GuiGraphics guiGraphics, float v, int i, int i1) {
-        int relX = (this.height - this.imageHeight) / 2;
-        int relY = (this.width - this.imageWidth) / 2;
+        int relY = (this.height - this.imageHeight) / 2;
+        int relX = (this.width - this.imageWidth) / 2;
 
         guiGraphics.blit(GUI, relX, relY, 0, 0, this.imageWidth, this.imageHeight);
     }

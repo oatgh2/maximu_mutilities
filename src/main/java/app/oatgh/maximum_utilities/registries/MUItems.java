@@ -1,7 +1,6 @@
 package app.oatgh.maximum_utilities.registries;
 
 import app.oatgh.maximum_utilities.MaximumUtilities;
-import app.oatgh.maximum_utilities.blocks.furnances.BakceryFurnance;
 import app.oatgh.maximum_utilities.items.BreadDough;
 import app.oatgh.maximum_utilities.items.FlourPowder;
 import app.oatgh.maximum_utilities.items.WaterBowl;

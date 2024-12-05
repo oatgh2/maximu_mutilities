@@ -36,7 +36,5 @@ public class MaximumUtilitiesBlockBase extends Block implements EntityBlock {
                 }
             };
         }
-
-
     }
 }
