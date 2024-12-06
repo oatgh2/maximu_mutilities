@@ -5,6 +5,7 @@ import app.oatgh.maximum_utilities.registries.MUEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -23,6 +24,7 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
         super(MUEntities.BACKERY_FURNANCE_ENTITY.get(), blockPos, blockState);
         level = getLevel();
     }
+
     public LazyOptional<ItemStackHandler> inventory = LazyOptional.of(() ->  new ItemStackHandler(3){
         @Override
         protected void onContentsChanged(int slot) {
@@ -31,7 +33,9 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
         }
     });
 
-
+    public ItemStackHandler getInventory() {
+        return inventory.orElseThrow(NotImplementedException::new);
+    }
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
