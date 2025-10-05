@@ -44,7 +44,6 @@ minecraft {
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
             arg "-mixin.config=maximumutilities.mixin.json"
-            jvmArg "-XX:+AllowEnhacedClassRedefinition"
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             property 'forge.enabledGameTestNamespaces', 'examplemod'

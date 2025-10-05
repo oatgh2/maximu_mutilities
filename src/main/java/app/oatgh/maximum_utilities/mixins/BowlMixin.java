@@ -26,7 +26,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-
 @Mixin(value = Item.class, remap = false)
 public abstract class BowlMixin {
 
@@ -35,13 +34,14 @@ public abstract class BowlMixin {
         throw new AssertionError();
     }
 
-    @Shadow public abstract InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand);
+    @Shadow
+    public abstract InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand);
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
     @Inject(at = @At(value = "HEAD"), method = "use", cancellable = true)
     public void useBowlInWater(Level pLevel, @NotNull Player pPlayer, InteractionHand pUsedHand,
-                               CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
+            CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
         ItemStack itemUsed = pPlayer.getItemInHand(pUsedHand);
         if (itemUsed.getItem().equals(Items.BOWL)) {
             try {
@@ -50,22 +50,23 @@ public abstract class BowlMixin {
                 BlockPos realAimedPos = blockHitResult.withDirection(hitedDirection).getBlockPos();
                 BlockState hitedBlockState = pLevel.getBlockState(realAimedPos);
                 if (hitedBlockState.getBlock() instanceof BucketPickup bucketPickup
-                        && (hitedBlockState.getBlock() == Blocks.WATER || hitedBlockState.getFluidState().is(Fluids.WATER))) {
+                        && (hitedBlockState.getBlock() == Blocks.WATER
+                                || hitedBlockState.getFluidState().is(Fluids.WATER))) {
                     ItemStack resultedItemStack = new ItemStack(MUItems.WATER_BOWL.get());
                     ItemStack pickedUpItem = bucketPickup.pickupBlock(pLevel, realAimedPos, hitedBlockState);
                     bucketPickup.getPickupSound(hitedBlockState).ifPresent((soundEvent) -> {
                         pPlayer.playSound(soundEvent, 1F, 1F);
                     });
                     pLevel.gameEvent(pPlayer, GameEvent.FLUID_PICKUP, realAimedPos);
-                    if(!pLevel.isClientSide()){
-                        CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)pPlayer, resultedItemStack);
+                    if (!pLevel.isClientSide()) {
+                        CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer) pPlayer, resultedItemStack);
                     }
                     ItemStack itemStackInHand = pPlayer.getItemInHand(pUsedHand);
-                    if(itemStackInHand.getCount() > 1){
+                    if (itemStackInHand.getCount() > 1) {
                         pPlayer.setItemInHand(pUsedHand, new ItemStack(itemStackInHand.getItem(),
                                 itemStackInHand.getCount() - 1));
                         pPlayer.addItem(resultedItemStack);
-                    }else{
+                    } else {
                         pPlayer.setItemInHand(pUsedHand, resultedItemStack);
                     }
                 }
