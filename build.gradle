@@ -97,7 +97,6 @@ repositories {
 }
 
 dependencies {
-    implementation files("D:\\Downloads\\hotswap-agent-1.4.2-SNAPSHOT.jar")
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
 

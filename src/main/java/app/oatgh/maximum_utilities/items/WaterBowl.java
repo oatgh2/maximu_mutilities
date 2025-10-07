@@ -26,6 +26,7 @@ public class WaterBowl extends BucketItem {
     }
 
     @Override
+    @Deprecated
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level pLevel, @NotNull Player pPlayer,
                                                            @NotNull InteractionHand pHand) {
 
