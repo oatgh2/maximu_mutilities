@@ -1,4 +1,4 @@
-package app.oatgh.maximum_utilities.blocks.menu.containers;
+package app.oatgh.maximum_utilities.menu.containers;
 
 import java.util.List;
 import app.oatgh.maximum_utilities.blocks.furnances.BackeryFurnanceEntity;
@@ -27,6 +27,9 @@ public class BackeryFurnanceContainer extends MaximumUtilitiesContainerBase {
     private int fuelBurnTime = 0;
     private int fuelTotalBurnTime = 0;
 
+    private int itemBurnTime = 0;
+    private int itemBurnTimeMax = 0;
+
     public BackeryFurnanceContainer(int windowId, Inventory inv, FriendlyByteBuf buf) {
         this(windowId, inv, buf.readBlockPos());
     }
@@ -40,7 +43,7 @@ public class BackeryFurnanceContainer extends MaximumUtilitiesContainerBase {
         this.data = new ContainerData() {
             @Override
             public int getCount() {
-                return 4;
+                return 6;
             }
 
             @Override
@@ -59,7 +62,14 @@ public class BackeryFurnanceContainer extends MaximumUtilitiesContainerBase {
                     case 3:
                         result = bfe.getFuelTotalBurnTime();
                         break;
+                    case 4:
+                        result = bfe.getProgress();
+                        break;
+                    case 5:
+                        result = bfe.getProgressMax();
+                        break;
                     default:
+                        result = 0;
                         break;
                 }
                 return result;
@@ -75,10 +85,16 @@ public class BackeryFurnanceContainer extends MaximumUtilitiesContainerBase {
                         energyStorageProgressMax = pValue;
                         break;
                     case 2:
-                        fuelBurnTime = pValue; 
+                        fuelBurnTime = pValue;
                         break;
                     case 3:
                         fuelTotalBurnTime = pValue;
+                        break;
+                    case 4:
+                        itemBurnTime = pValue;
+                        break;
+                    case 5:
+                        itemBurnTimeMax = pValue;
                         break;
                     default:
                         break;
@@ -112,6 +128,22 @@ public class BackeryFurnanceContainer extends MaximumUtilitiesContainerBase {
 
     private BlockEntity getBlockEntity() {
         return player.level().getBlockEntity(blockPos);
+    }
+
+    public int getItemBurnTime() {
+        return itemBurnTime;
+    }
+
+    public void setItemBurnTime(int itemBurnTime) {
+        this.itemBurnTime = itemBurnTime;
+    }
+
+    public int getItemBurnTimeMax() {
+        return itemBurnTimeMax;
+    }
+
+    public void setItemBurnTimeMax(int itemBurnTimeMax) {
+        this.itemBurnTimeMax = itemBurnTimeMax;
     }
 
     @Override

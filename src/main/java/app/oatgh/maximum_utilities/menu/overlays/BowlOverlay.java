@@ -1,4 +1,4 @@
-package app.oatgh.maximum_utilities.blocks.menu.overlays;
+package app.oatgh.maximum_utilities.menu.overlays;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;

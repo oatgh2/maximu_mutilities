@@ -32,7 +32,7 @@ public class MaximumUtilitiesBlockBase extends Block implements EntityBlock {
         else{
             return (lvl, blockState, st, blockEntityType) -> {
                 if(blockEntityType instanceof MaximumUtilitiesBlockEntity mub){
-                    mub.tickServer();
+                    mub.tickServer(pLevel, pState);
                 }
             };
         }

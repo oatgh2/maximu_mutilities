@@ -6,7 +6,6 @@ import app.oatgh.maximum_utilities.utils.PlaySounds;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 public class BreadDoughRecipeHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    
     @SubscribeEvent
     public void onCrafting(PlayerEvent.ItemCraftedEvent event) {
         try {

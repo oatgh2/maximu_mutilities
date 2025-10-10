@@ -1,15 +1,11 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "maximumutilities:bowl_recipe",
   "ingredients": [
-    {
-      "item": "maximumutilities:water_bowl"
-    },
-    {
-      "item": "maximumutilities:flour_powder"
-    }
+    { "item": "maximumutilities:flour_powder" }
   ],
-  "result": {
-    "item": "maximumutilities:bread_dough",
-    "count": 3
-  }
+  "fluid": {
+    "name": "minecraft:water",
+    "amount": 250
+  },
+  "result": { "item": "maximumutilities:bread_dough" }
 }

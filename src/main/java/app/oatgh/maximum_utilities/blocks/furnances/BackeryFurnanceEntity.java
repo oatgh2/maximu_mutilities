@@ -9,8 +9,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -23,6 +26,8 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.items.ItemStackHandler;
 
+import java.util.Optional;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,11 +35,14 @@ import org.jetbrains.annotations.Nullable;
 public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
     private final String COMPOUND_INVENTORY_TAG = "backery_furnance_inventory_data";
     private final String COMPOUND_ENERGY_TAG = "backery_furnance_energy_data";
+    private final int ENERGY_GEN_COUNT = 3;
+    private final int ENERGY_CONSUME_COUNT = 3;
     Level level;
 
     int fuelTotalBurnTime = 0;
     int fuelBurnTime = 0;
     int progress = 0;
+    int maxProgress = 0;
 
     public int getEnergyProgress() {
         return getEnergy().getEnergyStored();
@@ -60,6 +68,10 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
         this.fuelBurnTime = fuelBurnTime;
     }
 
+    public int getProgressMax() {
+        return maxProgress;
+    }
+
     public int getProgress() {
         return progress;
     }
@@ -70,7 +82,7 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
 
     public BackeryFurnanceEntity(BlockPos blockPos, BlockState blockState) {
         super(MUEntities.BACKERY_FURNANCE_ENTITY.get(), blockPos, blockState);
-        level = getLevel();
+        // level = getLevel();
     }
 
     EnergyStorage energyStorage = new EnergyStorage(1000, 300, 30);
@@ -146,7 +158,8 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
 
     private void genEnergy(EnergyStorage energyStorage) {
         ItemStack fuelStack = getInventory().getStackInSlot(1);
-        if (fuelTotalBurnTime == 0 && !fuelStack.isEmpty() && energyStorage.getEnergyStored() < energyStorage.getMaxEnergyStored()) {
+        if (fuelTotalBurnTime == 0 && !fuelStack.isEmpty()
+                && energyStorage.getEnergyStored() < energyStorage.getMaxEnergyStored()) {
             // Fill fuel and consume from fuel stack
             fuelTotalBurnTime = ForgeHooks.getBurnTime(fuelStack, RecipeType.SMELTING);
             fuelStack.shrink(1);
@@ -154,23 +167,64 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
 
         if (fuelTotalBurnTime > fuelBurnTime) {
             // Consumes burntime and gen energy
-            if (energyStorage.receiveEnergy(1, false) != 0) {
+            if (energyStorage.receiveEnergy(ENERGY_GEN_COUNT, false) != 0) {
                 fuelBurnTime++;
                 setChanged();
             }
-        }else{
+        } else {
             fuelTotalBurnTime = 0;
             fuelBurnTime = 0;
         }
     }
 
+    private Optional<SmeltingRecipe> getRecipe(Level pLevel, ItemStack stackInv) {
+        if (pLevel != null) {
+            SimpleContainer simpleContainer = new SimpleContainer(stackInv);
+            return pLevel.getRecipeManager().getRecipeFor(RecipeType.SMELTING, simpleContainer, level);
+        }
+        return Optional.empty();
+    }
+
+    private void processSmelting(Level pLevel) {
+        ItemStack stackInInv = inventoryHandler.getStackInSlot(0);
+        ItemStack stackInOut = inventoryHandler.getStackInSlot(2);
+        if (stackInOut.getCount() < 64) {
+            Optional<SmeltingRecipe> recipe = getRecipe(pLevel, stackInInv);
+            if (recipe.isPresent() && maxProgress == 0) {
+                maxProgress = (int) (recipe.get().getCookingTime() * 0.60);
+            }
+
+            if (recipe.isPresent() && maxProgress > progress) {
+                if (energyStorage.getEnergyStored() >= ENERGY_CONSUME_COUNT
+                        && energyStorage.extractEnergy(ENERGY_CONSUME_COUNT, false) == 3)
+                    progress++;
+
+            } else {
+                if (maxProgress > 0 && maxProgress == progress) {
+                    craftItem(pLevel, recipe.get());
+                    maxProgress = 0;
+                    progress = 0;
+                }
+            }
+        }
+    }
+
+    private void craftItem(Level pLevel, Recipe<?> recipe) {
+        ItemStack result = recipe.getResultItem(pLevel.registryAccess()).copy();
+
+        inventoryHandler.extractItem(0, 1, false);
+
+        ItemStack currentOutput = inventoryHandler.getStackInSlot(2);
+
+        if (currentOutput.isEmpty())
+            inventoryHandler.setStackInSlot(2, result);
+        else
+            currentOutput.grow(result.getCount());
+    }
+
     @Override
-    public void tickServer() {
-        // BlockPos pos = getBlockPos();
-        // System.out.println("Tick at: " + pos.getX() + " " + pos.getY() + " " +
-        // pos.getZ());
-        energy.ifPresent(energyStorage -> {
-            genEnergy(energyStorage);
-        });
+    public void tickServer(Level pLevel, BlockState pState) {
+        genEnergy(energyStorage);
+        processSmelting(pLevel);
     }
 }

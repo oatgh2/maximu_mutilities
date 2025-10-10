@@ -1,7 +1,7 @@
 package app.oatgh.maximum_utilities.blocks.furnances;
 
 import app.oatgh.maximum_utilities.blocks.MaximumUtilitiesBlockBase;
-import app.oatgh.maximum_utilities.blocks.menu.containers.BackeryFurnanceContainer;
+import app.oatgh.maximum_utilities.menu.containers.BackeryFurnanceContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;

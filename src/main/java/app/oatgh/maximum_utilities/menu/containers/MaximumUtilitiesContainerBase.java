@@ -1,4 +1,4 @@
-package app.oatgh.maximum_utilities.blocks.menu.containers;
+package app.oatgh.maximum_utilities.menu.containers;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;

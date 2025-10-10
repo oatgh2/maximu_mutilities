@@ -1,0 +1,11 @@
+{
+  "type": "maximumutilities:drain_fluid_bowl",
+  "ingredients": [
+    {
+      "item": "minecraft:bowl"
+    }
+  ],
+  "result": {
+    "item": "minecraft:bowl"
+  }
+}

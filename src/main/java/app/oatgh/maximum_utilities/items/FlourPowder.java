@@ -6,4 +6,5 @@ public class FlourPowder extends Item {
     public FlourPowder(Properties properties) {
         super(properties);
     }
+
 }

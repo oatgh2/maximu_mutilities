@@ -4,9 +4,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import app.oatgh.maximum_utilities.MaximumUtilities;
+import app.oatgh.maximum_utilities.handlers.BowlItemCraftHandler;
+import app.oatgh.maximum_utilities.registries.MUItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -22,6 +25,9 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStackSimple;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.items.ItemStackHandler;
 
 @Mod.EventBusSubscriber(modid = MaximumUtilities.MODID)
 public class AttachVanillaCapabilities {
@@ -31,37 +37,64 @@ public class AttachVanillaCapabilities {
     ItemStack stack = event.getObject();
 
     if (stack.is(Items.BOWL)) {
-      event.addCapability(new ResourceLocation(MaximumUtilities.MODID, "bowl_fluid_handler"),
-          new ICapabilitySerializable<CompoundTag>() {
-            private final IFluidHandlerItem fluidHandler = new FluidHandlerItemStackSimple(stack, 250) {
-              @Override
-              public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
-                boolean result = false;
-                if(stack.getFluid().isSame(Fluids.WATER)){
-                  result = true;
-                }
-                return result;
-              }
-
-            };
-            private final LazyOptional<IFluidHandlerItem> fluidHandlerOptional = LazyOptional.of(() -> fluidHandler);
-
-            @Override
-            public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-              return cap == ForgeCapabilities.FLUID_HANDLER_ITEM ? fluidHandlerOptional.cast() : LazyOptional.empty();
-            }
-
-            @Override
-            public CompoundTag serializeNBT() {
-              return fluidHandler.getContainer().getOrCreateTag();
-            }
-
-            @Override
-            public void deserializeNBT(CompoundTag nbt) {
-              fluidHandler.getContainer().setTag(nbt);
-            }
-          });
+      AddBowlFluidCapabilitie(event, stack);
+      AddBowlStorageCapatbilitie(event, stack);
     }
   }
 
+  private static void AddBowlStorageCapatbilitie(AttachCapabilitiesEvent<ItemStack> event, ItemStack stack) {
+    event.addCapability(new ResourceLocation(MaximumUtilities.MODID, "bowl_storage_handler"),
+        new ICapabilitySerializable<CompoundTag>() {
+          BowlItemCraftHandler itemHandler = new BowlItemCraftHandler(null, null, stack);
+          LazyOptional<IItemHandler> lazyItemHandler = LazyOptional.of(() -> itemHandler);
+
+          @Override
+          public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+            return cap == ForgeCapabilities.ITEM_HANDLER ? lazyItemHandler.cast() : LazyOptional.empty();
+          }
+
+          @Override
+          public CompoundTag serializeNBT() {
+            return itemHandler.serializeNBT();
+          }
+
+          @Override
+          public void deserializeNBT(CompoundTag nbt) {
+            itemHandler.deserializeNBT(nbt);
+          }
+        });
+  }
+
+  private static void AddBowlFluidCapabilitie(AttachCapabilitiesEvent<ItemStack> event, ItemStack stack) {
+    event.addCapability(new ResourceLocation(MaximumUtilities.MODID, "bowl_fluid_handler"),
+        new ICapabilitySerializable<CompoundTag>() {
+          private final IFluidHandlerItem fluidHandler = new FluidHandlerItemStackSimple(stack, 250) {
+            @Override
+            public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
+              boolean result = false;
+              if (stack.getFluid().isSame(Fluids.WATER)) {
+                result = true;
+              }
+              return result;
+            }
+
+          };
+          private final LazyOptional<IFluidHandlerItem> fluidHandlerOptional = LazyOptional.of(() -> fluidHandler);
+
+          @Override
+          public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+            return cap == ForgeCapabilities.FLUID_HANDLER_ITEM ? fluidHandlerOptional.cast() : LazyOptional.empty();
+          }
+
+          @Override
+          public CompoundTag serializeNBT() {
+            return fluidHandler.getContainer().getOrCreateTag();
+          }
+
+          @Override
+          public void deserializeNBT(CompoundTag nbt) {
+            fluidHandler.getContainer().setTag(nbt);
+          }
+        });
+  }
 }

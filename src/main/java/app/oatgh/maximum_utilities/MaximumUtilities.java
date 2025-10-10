@@ -4,6 +4,8 @@ import app.oatgh.maximum_utilities.registries.MUBlocks;
 import app.oatgh.maximum_utilities.registries.MUEntities;
 import app.oatgh.maximum_utilities.registries.MUItems;
 import app.oatgh.maximum_utilities.registries.MUMenus;
+import app.oatgh.maximum_utilities.registries.MURecipes;
+
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
@@ -28,11 +30,12 @@ public class MaximumUtilities
     {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
+        MURecipes.RECIPE_SERIALIZER.register(modEventBus);
+        MURecipes.RECIPE_TYPES.register(modEventBus);
         MUBlocks.BLOCKS.register(modEventBus);
         MUItems.ITEMS.register(modEventBus);
         MUEntities.BLOCK_ENTITIES.register(modEventBus);
         MUMenus.MENU_TYPES.register(modEventBus);
-
         modEventBus.addListener(MUItems::addCreative);
 
         modEventBus.addListener(this::commonSetup);

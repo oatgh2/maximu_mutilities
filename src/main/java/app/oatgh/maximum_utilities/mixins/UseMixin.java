@@ -1,15 +1,22 @@
 package app.oatgh.maximum_utilities.mixins;
 
+import app.oatgh.maximum_utilities.handlers.BowlItemCraftHandler;
+import app.oatgh.maximum_utilities.menu.containers.BackeryFurnanceContainer;
+import app.oatgh.maximum_utilities.menu.containers.BowlContainer;
 import app.oatgh.maximum_utilities.registries.MUItems;
 import com.mojang.logging.LogUtils;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -27,10 +34,13 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.FluidHandlerBlockEntity;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStackSimple;
+import net.minecraftforge.network.NetworkHooks;
 
+import java.io.Console;
 import java.util.logging.LogRecord;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -55,52 +65,81 @@ public abstract class UseMixin {
     public void useBowlInWaterCap(Level pLevel, @NotNull Player pPlayer, InteractionHand pUsedHand,
             CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
         ItemStack itemUsed = pPlayer.getItemInHand(pUsedHand);
-        if (itemUsed.getItem().equals(Items.BOWL)) {
-            try {
-                BlockHitResult blockHitResult = getPlayerPOVHitResult(pLevel, pPlayer, ClipContext.Fluid.SOURCE_ONLY);
-                Direction hitedDirection = blockHitResult.getDirection();
-                BlockPos realAimedPos = blockHitResult.withDirection(hitedDirection).getBlockPos();
-                BlockState hitedBlockState = pLevel.getBlockState(realAimedPos);
 
-                ItemStack handItemStack = pPlayer.getItemInHand(pUsedHand);
+        if (itemUsed.is(Items.BOWL)) {
 
-                handItemStack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM)
-                        .ifPresent(fluidHandler -> {
-                            FluidHandlerItemStackSimple fluidStack = (FluidHandlerItemStackSimple) fluidHandler;
-                            if (hitedBlockState.getBlock() instanceof BucketPickup bucketPickup
-                                    && hitedBlockState.getFluidState().is(Fluids.WATER)) {
-                                if (fluidStack.getFluid().isEmpty()) {
-                                    fluidStack.fill(new FluidStack(Fluids.WATER, 250),
-                                            IFluidHandler.FluidAction.EXECUTE);
+            if (pPlayer.isShiftKeyDown()) {
+                if (!pLevel.isClientSide()) {
+                    itemUsed.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
+                        if (handler instanceof BowlItemCraftHandler bowlItemHandler) {
+                            bowlItemHandler.SetLevel(pLevel);
+                            bowlItemHandler.SetPlayer(pPlayer);
+                        }
+                    });
 
-                                    ItemStack pickedUpItem = bucketPickup.pickupBlock(pLevel, realAimedPos,
-                                            hitedBlockState);
-                                    bucketPickup.getPickupSound(hitedBlockState).ifPresent((soundEvent) -> {
-                                        pPlayer.playSound(soundEvent, 1F, 1F);
-                                    });
+                    MenuProvider menuProvider = new MenuProvider() {
+                        @Override
+                        public Component getDisplayName() {
+                            return Component.translatable("maximumutilities.screen.bowl.menu");
+                        }
 
-                                    pLevel.gameEvent(pPlayer, GameEvent.FLUID_PICKUP, realAimedPos);
-                                    if (!pLevel.isClientSide()) {
-                                        CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer) pPlayer,
-                                                handItemStack);
+                        @Override
+                        public @Nullable AbstractContainerMenu createMenu(int windowId, Inventory inventory,
+                                Player player) {
+                            return new BowlContainer(windowId, inventory, itemUsed);
+                        }
+                    };
+                    NetworkHooks.openScreen((ServerPlayer) pPlayer, menuProvider, buf -> buf.writeItem(itemUsed));
+                }
+                cir.setReturnValue(InteractionResultHolder.success(itemUsed));
+            } else {
+                try {
+                    BlockHitResult blockHitResult = getPlayerPOVHitResult(pLevel, pPlayer,
+                            ClipContext.Fluid.SOURCE_ONLY);
+                    Direction hitedDirection = blockHitResult.getDirection();
+                    BlockPos realAimedPos = blockHitResult.withDirection(hitedDirection).getBlockPos();
+                    BlockState hitedBlockState = pLevel.getBlockState(realAimedPos);
+
+                    ItemStack handItemStack = pPlayer.getItemInHand(pUsedHand);
+                    handItemStack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM)
+                            .ifPresent(fluidHandler -> {
+                                FluidHandlerItemStackSimple fluidStack = (FluidHandlerItemStackSimple) fluidHandler;
+                                if (hitedBlockState.getBlock() instanceof BucketPickup bucketPickup
+                                        && hitedBlockState.getFluidState().is(Fluids.WATER)) {
+                                    if (fluidStack.getFluid().isEmpty()) {
+                                        fluidStack.fill(new FluidStack(Fluids.WATER, 250),
+                                                IFluidHandler.FluidAction.EXECUTE);
+
+                                        ItemStack pickedUpItem = bucketPickup.pickupBlock(pLevel, realAimedPos,
+                                                hitedBlockState);
+                                        bucketPickup.getPickupSound(hitedBlockState).ifPresent((soundEvent) -> {
+                                            pPlayer.playSound(soundEvent, 1F, 1F);
+                                        });
+
+                                        pLevel.gameEvent(pPlayer, GameEvent.FLUID_PICKUP, realAimedPos);
+                                        if (!pLevel.isClientSide()) {
+                                            CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer) pPlayer,
+                                                    handItemStack);
+                                        }
                                     }
-                                }
-                            } else {
-                                BlockEntity blockEntity = pLevel.getBlockEntity(realAimedPos);
-                                if (!fluidStack.getFluid().isEmpty()) {
-                                    blockEntity.getCapability(ForgeCapabilities.FLUID_HANDLER)
-                                            .ifPresent(fluidBlockHandler -> {
-                                                FluidStack fluidDrained = fluidStack.drain(250,
-                                                        IFluidHandler.FluidAction.EXECUTE);
-                                                fluidBlockHandler.fill(fluidDrained, IFluidHandler.FluidAction.EXECUTE);
-                                            });
-                                }
+                                } else {
+                                    BlockEntity blockEntity = pLevel.getBlockEntity(realAimedPos);
+                                    if (!fluidStack.getFluid().isEmpty()) {
+                                        blockEntity.getCapability(ForgeCapabilities.FLUID_HANDLER)
+                                                .ifPresent(fluidBlockHandler -> {
+                                                    FluidStack fluidDrained = fluidStack.drain(250,
+                                                            IFluidHandler.FluidAction.EXECUTE);
+                                                    fluidBlockHandler.fill(fluidDrained,
+                                                            IFluidHandler.FluidAction.EXECUTE);
+                                                });
+                                    }
 
-                            }
-                        });
+                                }
+                            });
 
-            } catch (Exception ex) {
-                LOGGER.error(ex.toString());
+                } catch (Exception ex) {
+                    LOGGER.error(ex.toString());
+                }
             }
         }
     }

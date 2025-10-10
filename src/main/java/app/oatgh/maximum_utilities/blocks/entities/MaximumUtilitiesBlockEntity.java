@@ -25,7 +25,8 @@ public abstract class MaximumUtilitiesBlockEntity extends BlockEntity {
         blockState = pBlockState;
     }
 
-    public void tickServer(){
+    
+    public void tickServer(Level pLevel, BlockState pState){
         throw new NotImplementedException("Implement this on custom block entity");
     }
 
