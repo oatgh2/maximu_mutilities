@@ -30,7 +30,7 @@ public class BowlContainer extends MaximumUtilitiesContainerBase {
   }
 
   public BowlContainer(int windowId, Inventory inventory, ItemStack itemStack) {
-    super(MUMenus.BOWL_CONTAINER.get(), windowId);
+    super(MUMenus.BOWL_CONTAINER.get(), windowId, 2);
     bowlStack = itemStack;
 
     data = new ContainerData() {

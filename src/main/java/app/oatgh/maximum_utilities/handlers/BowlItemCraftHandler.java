@@ -2,6 +2,7 @@ package app.oatgh.maximum_utilities.handlers;
 
 import java.util.Optional;
 
+import org.checkerframework.checker.units.qual.s;
 import org.jetbrains.annotations.NotNull;
 
 import app.oatgh.maximum_utilities.recipes.bowl.BowlRecipe;
@@ -25,7 +26,7 @@ public class BowlItemCraftHandler extends ItemStackHandler {
   private Player pPlayer;
   private ItemStack items;
   private BowlRecipe recipe = null;
-
+  private boolean isProcessing = false;
   public BowlItemCraftHandler(Level pLevel, Player pPlayer, ItemStack items) {
     super(2);
     this.pLevel = pLevel;
@@ -55,6 +56,12 @@ public class BowlItemCraftHandler extends ItemStackHandler {
   }
 
   @Override
+  public int getSlotLimit(int slot) {
+    if(slot == 1) return 1;
+    return super.getSlotLimit(slot);
+  }
+
+  @Override
   protected void onContentsChanged(int slot) {
     if (getSafeLevel().isClientSide())
       return;
@@ -75,13 +82,21 @@ public class BowlItemCraftHandler extends ItemStackHandler {
   }
 
   public void commitRecipe() {
+    if (recipe == null) return;
+
     items.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).ifPresent(fluid -> {
-      fluid.drain(recipe.getRequiredFluidStack().getAmount(), IFluidHandler.FluidAction.EXECUTE);
-      extractItem(0, 1, false);
+        fluid.drain(recipe.getRequiredFluidStack().getAmount(), IFluidHandler.FluidAction.EXECUTE);
+        extractItem(0, 1, false);
     });
+
+    // limpa o resultado e reseta o recipe
+    setStackInSlot(1, ItemStack.EMPTY);
+    recipe = null;
   }
 
-  private void tryGenRecipe() {
+  public void tryGenRecipe() {
+    if(isProcessing) return;
+    isProcessing = true;
     InnerBowlStackCraftHandler recipeContainer = new InnerBowlStackCraftHandler(getSlots());
 
     for (int i = 0; i < getSlots(); i++) {
@@ -95,9 +110,13 @@ public class BowlItemCraftHandler extends ItemStackHandler {
 
       if (match.isPresent()) {
         recipe = match.get();
-        ItemStack itemResult = recipe.getResultItem(getSafeLevel().registryAccess());
+        ItemStack itemResult = recipe.getResultItem(getSafeLevel().registryAccess()).copy();
         insertItem(1, itemResult, false);
+      }else{
+        recipe = null;
+        setStackInSlot(1, ItemStack.EMPTY);
       }
     });
+    isProcessing = false;
   }
 }

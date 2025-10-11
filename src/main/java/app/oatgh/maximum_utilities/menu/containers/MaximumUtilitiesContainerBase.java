@@ -10,8 +10,11 @@ import org.jetbrains.annotations.Nullable;
 
 public class MaximumUtilitiesContainerBase extends AbstractContainerMenu {
 
-    protected MaximumUtilitiesContainerBase(@Nullable MenuType<?> pMenuType, int pContainerId) {
+    final int invSlotCounter;
+
+    protected MaximumUtilitiesContainerBase(@Nullable MenuType<?> pMenuType, int pContainerId, int innerInvSlots) {
         super(pMenuType, pContainerId);
+        invSlotCounter = innerInvSlots;
     }
 
     protected int addHorizontalPlayerInventory(Container inventory, int x, int y, int dx, int startIndex, int range)
@@ -44,8 +47,35 @@ public class MaximumUtilitiesContainerBase extends AbstractContainerMenu {
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int i) {
-        return ItemStack.EMPTY;
+    public ItemStack quickMoveStack(Player player, int index) {
+       ItemStack newStack = ItemStack.EMPTY;
+        Slot slot = this.slots.get(index);
+
+        if (slot != null && slot.hasItem()) {
+            ItemStack original = slot.getItem();
+            newStack = original.copy();
+
+            int containerSlots = invSlotCounter;
+
+            
+            if (index < containerSlots) {
+                
+                if (!this.moveItemStackTo(original, containerSlots, this.slots.size(), true))
+                    return ItemStack.EMPTY;
+            }
+            else {
+                if (!this.moveItemStackTo(original, 0, containerSlots, false))
+                    return ItemStack.EMPTY;
+            }
+
+            if (original.isEmpty()) {
+                slot.set(ItemStack.EMPTY);
+            } else {
+                slot.setChanged();
+            }
+        }
+
+        return newStack;
     }
 
     @Override

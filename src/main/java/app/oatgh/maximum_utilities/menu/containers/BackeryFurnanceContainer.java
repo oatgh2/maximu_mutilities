@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.DataSlot;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.IItemHandler;
@@ -35,7 +36,7 @@ public class BackeryFurnanceContainer extends MaximumUtilitiesContainerBase {
     }
 
     public BackeryFurnanceContainer(int windowId, Inventory inventory, BlockPos blockPos) {
-        super(MUMenus.BACKERY_CONTAINER.get(), windowId);
+        super(MUMenus.BACKERY_CONTAINER.get(), windowId, 3);
         this.blockPos = blockPos;
         this.player = inventory.player;
         bfe = (BackeryFurnanceEntity) getBlockEntity();
@@ -144,11 +145,6 @@ public class BackeryFurnanceContainer extends MaximumUtilitiesContainerBase {
 
     public void setItemBurnTimeMax(int itemBurnTimeMax) {
         this.itemBurnTimeMax = itemBurnTimeMax;
-    }
-
-    @Override
-    public ItemStack quickMoveStack(Player player, int i) {
-        return ItemStack.EMPTY;
     }
 
     @Override

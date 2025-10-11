@@ -37,8 +37,8 @@ public class AttachVanillaCapabilities {
     ItemStack stack = event.getObject();
 
     if (stack.is(Items.BOWL)) {
-      AddBowlFluidCapabilitie(event, stack);
       AddBowlStorageCapatbilitie(event, stack);
+      AddBowlFluidCapabilitie(event, stack);
     }
   }
 
@@ -76,6 +76,17 @@ public class AttachVanillaCapabilities {
                 result = true;
               }
               return result;
+            }
+
+            @Override
+            public int fill(@NotNull FluidStack resource, FluidAction action) {
+              int filled = super.fill(resource, action);
+              stack.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
+                if(itemHandler instanceof BowlItemCraftHandler craftHandler){
+                  craftHandler.tryGenRecipe();
+                }
+              });
+              return filled;
             }
 
           };

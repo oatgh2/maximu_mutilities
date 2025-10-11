@@ -33,6 +33,10 @@ public class BowlRecipe extends MaximumUtilitiesRecipe {
     this.resulItemStack = resulItemStack;
   }
 
+  public NonNullList<Ingredient> getIngredients(){
+    return ingredients;
+  }
+
   public FluidStack getRequiredFluidStack(){
     return reqFluidStack;
   }
