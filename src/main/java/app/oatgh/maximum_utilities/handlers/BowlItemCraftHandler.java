@@ -46,7 +46,7 @@ public class BowlItemCraftHandler extends ItemStackHandler {
   public boolean isItemValid(int slot, @NotNull ItemStack stack) {
     switch (slot) {
       case 0:
-        return stack.is(MUItems.FLOUR_POWDER.get());
+        return stack.is(MUItems.FLOUR_POWDER.get()) || stack.is(MUItems.BREAD_DOUGH.get());
       case 1: {
         return stack.is(MUItems.BREAD_DOUGH.get());
       }

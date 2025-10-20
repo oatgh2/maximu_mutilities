@@ -22,6 +22,11 @@ public class BackeryFurnanceScreen extends AbstractContainerScreen<BackeryFurnan
 
     }
 
+    @Override
+    protected void renderLabels(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY) {
+        super.renderLabels(pGuiGraphics, pMouseX, pMouseY);
+    }
+
     private void renderEnergyStorage(GuiGraphics gui, int relX, int relY) {
         int energy = menu.getEnergyProgress();
         int energyMax = menu.getEnergyProgressMax();

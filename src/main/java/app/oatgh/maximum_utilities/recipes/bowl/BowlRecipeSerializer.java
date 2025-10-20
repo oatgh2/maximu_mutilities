@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -29,11 +30,13 @@ public class BowlRecipeSerializer implements RecipeSerializer<BowlRecipe> {
     for (JsonElement ingredient : ingredientsArr)
       ingredients.add(Ingredient.fromJson(ingredientsArr));
 
-    JsonObject fluidObj = GsonHelper.getAsJsonObject(pSerializedRecipe, "fluid");
-    Fluid fluid = ForgeRegistries.FLUIDS.getValue(new ResourceLocation(GsonHelper.getAsString(fluidObj, "name")));
-    int amount = GsonHelper.getAsInt(fluidObj, "amount");
-    FluidStack fluidStack = new FluidStack(fluid, amount);
-
+    FluidStack fluidStack = null;
+      if(pSerializedRecipe.has("fluid")){
+        JsonObject fluidObj = GsonHelper.getAsJsonObject(pSerializedRecipe, "fluid");
+        Fluid fluid = ForgeRegistries.FLUIDS.getValue(new ResourceLocation(GsonHelper.getAsString(fluidObj, "name")));
+        int amount = GsonHelper.getAsInt(fluidObj, "amount");
+        fluidStack = new FluidStack(fluid, amount);
+    }
     ItemStack result = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(pSerializedRecipe, "result"));
     return new BowlRecipe(pRecipeId, CraftingBookCategory.BUILDING, ingredients, fluidStack, result);
   }

@@ -3,25 +3,22 @@ package app.oatgh.maximum_utilities.blocks.furnances;
 import app.oatgh.maximum_utilities.blocks.entities.MaximumUtilitiesBlockEntity;
 import app.oatgh.maximum_utilities.registries.MUEntities;
 import app.oatgh.maximum_utilities.registries.MUItems;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.data.ForgeRecipeProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.items.ItemStackHandler;
@@ -37,7 +34,6 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
     private final String COMPOUND_ENERGY_TAG = "backery_furnance_energy_data";
     private final int ENERGY_GEN_COUNT = 3;
     private final int ENERGY_CONSUME_COUNT = 3;
-    Level level;
 
     int fuelTotalBurnTime = 0;
     int fuelBurnTime = 0;
@@ -185,6 +181,14 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
         return Optional.empty();
     }
 
+    private void toggleSetRedstone(Level level, boolean on) {
+        level.setBlock(worldPosition, blockState.setValue(BlockStateProperties.LIT, on), 3);
+    }
+
+    private void setLightLevel(Level level, int value) {
+        level.setBlock(worldPosition, blockState.setValue(BackeryFurnance.LIGHT_LEVEL, value), 3);
+    }
+
     private void processSmelting(Level pLevel) {
         ItemStack stackInInv = inventoryHandler.getStackInSlot(0);
         ItemStack stackInOut = inventoryHandler.getStackInSlot(2);
@@ -196,14 +200,17 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
 
             if (recipe.isPresent() && maxProgress > progress) {
                 if (energyStorage.getEnergyStored() >= ENERGY_CONSUME_COUNT
-                        && energyStorage.extractEnergy(ENERGY_CONSUME_COUNT, false) == 3)
+                        && energyStorage.extractEnergy(ENERGY_CONSUME_COUNT, false) == 3) {
+                    toggleSetRedstone(pLevel, true);
                     progress++;
+                }
 
             } else {
                 if (maxProgress > 0 && maxProgress == progress) {
                     craftItem(pLevel, recipe.get());
                     maxProgress = 0;
                     progress = 0;
+                    toggleSetRedstone(pLevel, false);
                 }
             }
         }
@@ -224,7 +231,17 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
 
     @Override
     public void tickServer(Level pLevel, BlockState pState) {
+        setLightLevel(level, getLightLevel());
         genEnergy(energyStorage);
         processSmelting(pLevel);
+    }
+
+    private int getLightLevel() {
+        float percent = fuelBurnTime > 0 && fuelTotalBurnTime > 0 ? (float) fuelBurnTime / (float) fuelTotalBurnTime
+                : 1;
+        percent = Mth.clamp(percent, 0f, 1f);
+        int maxLight = 14;
+        int lightLevel = (int) (maxLight - (percent * maxLight));
+        return lightLevel;
     }
 }

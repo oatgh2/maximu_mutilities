@@ -1,6 +1,6 @@
 package app.oatgh.maximum_utilities.registries;
 
-import app.oatgh.maximum_utilities.blocks.furnances.BakceryFurnance;
+import app.oatgh.maximum_utilities.blocks.furnances.BackeryFurnance;
 import app.oatgh.maximum_utilities.MaximumUtilities;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.DeferredRegister;
@@ -16,6 +16,6 @@ public class MUBlocks {
 
 
     public static final RegistryObject<Block> BACKERY_FURNANCE = BLOCKS.register(
-            "backery_furnance", BakceryFurnance::new);
+            "backery_furnance", BackeryFurnance::new);
 
 }

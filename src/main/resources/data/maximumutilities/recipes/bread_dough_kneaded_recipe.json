@@ -1,0 +1,13 @@
+{
+  "type": "maximumutilities:bowl_recipe",
+  "ingredients": [
+    {
+      "item": "maximumutilities:bread_dough"
+    }
+  ],
+  "result": {
+    "item": "maximumutilities:bread_dough",
+    "nbt": "{kneaded:1b}",
+    "count": 1
+  }
+}

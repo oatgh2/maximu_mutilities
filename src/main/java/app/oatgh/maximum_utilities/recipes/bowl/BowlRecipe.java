@@ -1,5 +1,6 @@
 package app.oatgh.maximum_utilities.recipes.bowl;
 
+import app.oatgh.maximum_utilities.MaximumUtilities;
 import app.oatgh.maximum_utilities.recipes.MaximumUtilitiesRecipe;
 import app.oatgh.maximum_utilities.registries.MURecipes;
 import net.minecraft.core.NonNullList;
@@ -24,7 +25,8 @@ public class BowlRecipe extends MaximumUtilitiesRecipe {
   private FluidStack reqFluidStack;
   private ItemStack resulItemStack;
 
-  public BowlRecipe(ResourceLocation pId, CraftingBookCategory pCategory, NonNullList<Ingredient> ingredients, FluidStack reqFluidStack, ItemStack resulItemStack) {
+  public BowlRecipe(ResourceLocation pId, CraftingBookCategory pCategory, NonNullList<Ingredient> ingredients,
+      FluidStack reqFluidStack, ItemStack resulItemStack) {
     super(pId, pCategory);
     this.pId = pId;
     this.pCategory = pCategory;
@@ -33,32 +35,41 @@ public class BowlRecipe extends MaximumUtilitiesRecipe {
     this.resulItemStack = resulItemStack;
   }
 
-  public NonNullList<Ingredient> getIngredients(){
+  @Override
+  public ResourceLocation getId() {
+    return new ResourceLocation(MaximumUtilities.MODID, "bowl_recipe");
+  }
+
+  public NonNullList<Ingredient> getIngredients() {
     return ingredients;
   }
 
-  public FluidStack getRequiredFluidStack(){
+  public FluidStack getRequiredFluidStack() {
     return reqFluidStack;
   }
 
-  public boolean matchesFluid(IFluidHandlerItem fluidHandlerItem){
-    FluidStack containedFluid = fluidHandlerItem.getFluidInTank(0);
-    return containedFluid.containsFluid(reqFluidStack);
+  public boolean matchesFluid(IFluidHandlerItem fluidHandlerItem) {
+    if (reqFluidStack != null) {
+      FluidStack containedFluid = fluidHandlerItem.getFluidInTank(0);
+      return containedFluid.containsFluid(reqFluidStack);
+    }
+    return fluidHandlerItem.getFluidInTank(0).isEmpty();
   }
 
   @Override
   public boolean matches(CraftingContainer container, Level level) {
     for (Ingredient ing : ingredients) {
-            boolean found = false;
-            for (int i = 0; i < container.getContainerSize(); i++) {
-                if (ing.test(container.getItem(i))) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) return false;
+      boolean found = false;
+      for (int i = 0; i < container.getContainerSize(); i++) {
+        if (ing.test(container.getItem(i))) {
+          found = true;
+          break;
         }
-        return true;
+      }
+      if (!found)
+        return false;
+    }
+    return true;
   }
 
   @Override
@@ -73,12 +84,12 @@ public class BowlRecipe extends MaximumUtilitiesRecipe {
 
   @Override
   public RecipeSerializer<?> getSerializer() {
-   return MURecipes.BOWL_RECIPE_SERIALIZER.get();
+    return MURecipes.BOWL_RECIPE_SERIALIZER.get();
   }
 
   @Override
   public RecipeType<?> getType() {
-    return MURecipes.BOWL_RECIPE_TYPE; 
+    return MURecipes.BOWL_RECIPE_TYPE;
   }
 
 }
