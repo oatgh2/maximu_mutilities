@@ -37,7 +37,7 @@ public class BowlRecipe extends MaximumUtilitiesRecipe {
 
   @Override
   public ResourceLocation getId() {
-    return new ResourceLocation(MaximumUtilities.MODID, "bowl_recipe");
+    return pId;
   }
 
   public NonNullList<Ingredient> getIngredients() {

@@ -45,13 +45,42 @@ public class BowlMenuScreen extends AbstractContainerScreen<BowlContainer> {
         gui.blit(GUI, posX, posY + yOffset, imgCopyX, imgCopyY + yOffset, width, filled);
     }
 
+    private boolean isHoveringWater(int mouseX, int mouseY) {
+        int relX = (this.width - this.imageWidth) / 2;
+        int relY = (this.height - this.imageHeight) / 2;
+
+        int x = relX + 9;
+        int y = relY + 16;
+        int w = 16;
+        int h = 35;
+
+        return mouseX >= x && mouseX < x + w &&
+                mouseY >= y && mouseY < y + h;
+    }
+
     @Override
     protected void renderBg(@NotNull GuiGraphics guiGraphics, float v, int i, int i1) {
         int relY = (this.height - this.imageHeight) / 2;
         int relX = (this.width - this.imageWidth) / 2;
         this.inventoryLabelX = imageWidth - 50;
 
-        guiGraphics.blit(GUI, relX, relY, 0, 0, imageWidth + 4, imageHeight);
+        guiGraphics.blit(GUI, relX, relY, 0, 0, imageWidth + 4, imageHeight -15);
         renderWaterStorage(guiGraphics, relX, relY);
+    }
+
+    @Override
+    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(guiGraphics);
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+
+        this.renderTooltip(guiGraphics, mouseX, mouseY);
+        if (isHoveringWater(mouseX, mouseY)) {
+            guiGraphics.renderTooltip(
+                    font,
+                    Component.literal(menu.getWaterAmount() + " / " + menu.getWaterAmountMax() + " mb"),
+                    mouseX,
+                    mouseY
+            );
+        }
     }
 }

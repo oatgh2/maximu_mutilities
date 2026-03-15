@@ -40,6 +40,10 @@ public class BackeryFurnanceEntity extends MaximumUtilitiesBlockEntity {
     int progress = 0;
     int maxProgress = 0;
 
+    public int getEnergyGenCount() { return ENERGY_GEN_COUNT; }
+
+    public int getEnergyDrainCount() { return ENERGY_CONSUME_COUNT; }
+
     public int getEnergyProgress() {
         return getEnergy().getEnergyStored();
     }

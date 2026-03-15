@@ -1,5 +1,6 @@
 package app.oatgh.maximum_utilities.integration.jei;
 
+import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
 
 import app.oatgh.maximum_utilities.MaximumUtilities;
@@ -33,7 +34,7 @@ public class BowlRecipeCategory implements IRecipeCategory<BowlRecipe> {
 
   @Override
   public RecipeType<BowlRecipe> getRecipeType() {
-    return new RecipeType<>(new ResourceLocation(MaximumUtilities.MODID, "bowl_recipe"), BowlRecipe.class);
+    return MUJeiRecipeTypes.BOWL;
   }
 
   @Override
@@ -60,7 +61,8 @@ public class BowlRecipeCategory implements IRecipeCategory<BowlRecipe> {
   @Override
   public void setRecipe(IRecipeLayoutBuilder builder, BowlRecipe recipe, IFocusGroup focuses) {
     builder.addSlot(RecipeIngredientRole.INPUT, 64, 24).addIngredients(recipe.getIngredients().get(0));
-    builder.addSlot(RecipeIngredientRole.OUTPUT, 108, 24).addItemStack(recipe.getResultItem(null));
+    builder.addSlot(RecipeIngredientRole.OUTPUT, 108, 24).addItemStack(
+            recipe.getResultItem(Minecraft.getInstance().level.registryAccess()));
   }
 
 }

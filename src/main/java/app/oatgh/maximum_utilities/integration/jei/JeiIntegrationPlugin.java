@@ -2,6 +2,7 @@ package app.oatgh.maximum_utilities.integration.jei;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import app.oatgh.maximum_utilities.MaximumUtilities;
 import app.oatgh.maximum_utilities.recipes.bowl.BowlRecipe;
@@ -13,11 +14,13 @@ import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
+
 @JeiPlugin
 public class JeiIntegrationPlugin implements IModPlugin {
 
   @Override
-  public ResourceLocation getPluginUid() {
+  public @NotNull ResourceLocation getPluginUid() {
     return new ResourceLocation(MaximumUtilities.MODID, "jei_integration");
   }
   
@@ -32,8 +35,12 @@ public class JeiIntegrationPlugin implements IModPlugin {
   }
 
   void registerBowlRecipes(IRecipeRegistration recipeRegistration){
+    Minecraft mc = Minecraft.getInstance();
+    if(mc.level == null) return;
+
     net.minecraft.world.item.crafting.RecipeManager rm = Objects.requireNonNull(Minecraft.getInstance().level).getRecipeManager();
     List<BowlRecipe> recipes = rm.getAllRecipesFor(MURecipes.BOWL_RECIPE_TYPE);
-    recipeRegistration.addRecipes(RecipeType.create(MaximumUtilities.MODID, "bowl_recipe", BowlRecipe.class), recipes);
+    recipeRegistration.addRecipes(MUJeiRecipeTypes.BOWL, recipes);
+    System.out.println("Bowl recipes loaded: " + recipes.size());
   }
 }

@@ -31,6 +31,9 @@ public class BackeryFurnanceContainer extends MaximumUtilitiesContainerBase {
     private int itemBurnTime = 0;
     private int itemBurnTimeMax = 0;
 
+    private int maxEnergyGen = 0;
+    private int maxEnergyDrain = 0;
+
     public BackeryFurnanceContainer(int windowId, Inventory inv, FriendlyByteBuf buf) {
         this(windowId, inv, buf.readBlockPos());
     }
@@ -69,6 +72,11 @@ public class BackeryFurnanceContainer extends MaximumUtilitiesContainerBase {
                     case 5:
                         result = bfe.getProgressMax();
                         break;
+                    case 6:
+                        result = bfe.getEnergyGenCount();
+                    case 7:
+                        result = bfe.getEnergyDrainCount();
+                        break;
                     default:
                         result = 0;
                         break;
@@ -97,6 +105,11 @@ public class BackeryFurnanceContainer extends MaximumUtilitiesContainerBase {
                     case 5:
                         itemBurnTimeMax = pValue;
                         break;
+                    case 6:
+                        maxEnergyGen = pValue;
+                    case 7:
+                        maxEnergyDrain = pValue;
+                        break;
                     default:
                         break;
                 }
@@ -111,9 +124,11 @@ public class BackeryFurnanceContainer extends MaximumUtilitiesContainerBase {
         drawPlayerInventory(inventory, 10, 70);
     }
 
-    public int getEnergyProgress() {
-        return energyStorageProgress;
-    }
+    public int getEnergyProgress() { return energyStorageProgress; }
+
+    public int getMaxEnergyGenCount() { return maxEnergyGen; }
+
+    public int getMaxEnergyDrainCount() { return maxEnergyDrain; }
 
     public int getEnergyProgressMax() {
         return energyStorageProgressMax;

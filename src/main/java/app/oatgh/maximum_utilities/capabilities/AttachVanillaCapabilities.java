@@ -5,15 +5,11 @@ import org.jetbrains.annotations.Nullable;
 
 import app.oatgh.maximum_utilities.MaximumUtilities;
 import app.oatgh.maximum_utilities.handlers.BowlItemCraftHandler;
-import app.oatgh.maximum_utilities.registries.MUItems;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.ClipContext.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -26,8 +22,6 @@ import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStackSimple;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.ItemStackHandler;
 
 @Mod.EventBusSubscriber(modid = MaximumUtilities.MODID)
 public class AttachVanillaCapabilities {
@@ -37,12 +31,12 @@ public class AttachVanillaCapabilities {
     ItemStack stack = event.getObject();
 
     if (stack.is(Items.BOWL)) {
-      AddBowlStorageCapatbilitie(event, stack);
-      AddBowlFluidCapabilitie(event, stack);
+      AddBowlStorageCapatbility(event, stack);
+      AddBowlFluidCapability(event, stack);
     }
   }
 
-  private static void AddBowlStorageCapatbilitie(AttachCapabilitiesEvent<ItemStack> event, ItemStack stack) {
+  private static void AddBowlStorageCapatbility(AttachCapabilitiesEvent<ItemStack> event, ItemStack stack) {
     event.addCapability(new ResourceLocation(MaximumUtilities.MODID, "bowl_storage_handler"),
         new ICapabilitySerializable<CompoundTag>() {
           BowlItemCraftHandler itemHandler = new BowlItemCraftHandler(null, null, stack);
@@ -65,7 +59,7 @@ public class AttachVanillaCapabilities {
         });
   }
 
-  private static void AddBowlFluidCapabilitie(AttachCapabilitiesEvent<ItemStack> event, ItemStack stack) {
+  private static void AddBowlFluidCapability(AttachCapabilitiesEvent<ItemStack> event, ItemStack stack) {
     event.addCapability(new ResourceLocation(MaximumUtilities.MODID, "bowl_fluid_handler"),
         new ICapabilitySerializable<CompoundTag>() {
           private final IFluidHandlerItem fluidHandler = new FluidHandlerItemStackSimple(stack, 250) {
